@@ -1,0 +1,109 @@
+import React, { useState } from "react";
+
+const initialMemes = [
+  { url: "https://i.imgflip.com/265k.jpg", caption: "Monads All The Way!", votes: 3 },
+  { url: "https://i.imgflip.com/1bij.jpg", caption: "When Monad gas fee is 0.0001", votes: 5 }
+];
+
+const initialQuests = [
+  { title: "Deploy your first contract", xp: 10, done: false },
+  { title: "Vote on a Monad meme", xp: 5, done: false }
+];
+
+export default function MonadApp() {
+  // Meme state
+  const [memes, setMemes] = useState(initialMemes);
+  const [newCaption, setNewCaption] = useState("");
+  const [newUrl, setNewUrl] = useState("");
+
+  // Quest & XP state
+  const [userXP, setUserXP] = useState(0);
+  const [quests, setQuests] = useState(initialQuests);
+
+  // Add meme
+  function addMeme() {
+    if (!newUrl || !newCaption) return alert("Please add image URL and caption.");
+    setMemes([...memes, { url: newUrl, caption: newCaption, votes: 0 }]);
+    setNewUrl("");
+    setNewCaption("");
+  }
+
+  // Vote meme and complete "vote" quest if not done
+  function voteMeme(index) {
+    const updatedMemes = memes.map((meme, i) =>
+      i === index ? { ...meme, votes: meme.votes + 1 } : meme
+    );
+    setMemes(updatedMemes);
+
+    const voteQuestIndex = quests.findIndex(q => q.title === "Vote on a Monad meme");
+    if (voteQuestIndex !== -1 && !quests[voteQuestIndex].done) {
+      completeQuest(voteQuestIndex);
+    }
+  }
+
+  // Complete quest
+  function completeQuest(index) {
+    if (!quests[index].done) {
+      setUserXP(userXP + quests[index].xp);
+      const updatedQuests = quests.map((q, i) =>
+        i === index ? { ...q, done: true } : q
+      );
+      setQuests(updatedQuests);
+    }
+  }
+
+  return (
+    <div style={{ padding: 20, fontFamily: "Arial, sans-serif" }}>
+      <h1>Monad Meme Factory & Quest Hub 🚀</h1>
+
+      {/* Meme Factory */}
+      <section>
+        <h2>Meme Factory</h2>
+        <input
+          type="text"
+          placeholder="Image URL"
+          value={newUrl}
+          onChange={e => setNewUrl(e.target.value)}
+          style={{ marginRight: 10, width: 300 }}
+        />
+        <input
+          type="text"
+          placeholder="Caption"
+          value={newCaption}
+          onChange={e => setNewCaption(e.target.value)}
+          style={{ marginRight: 10, width: 300 }}
+        />
+        <button onClick={addMeme}>Add Meme</button>
+
+        <div style={{ marginTop: 20 }}>
+          {memes.map((meme, i) => (
+            <div key={i} style={{ marginBottom: 20, border: "1px solid #eee", padding: 10 }}>
+              <img src={meme.url} alt="meme" width={300} />
+              <p>{meme.caption}</p>
+              <button onClick={() => voteMeme(i)}>Votes: {meme.votes}</button>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Quest Hub */}
+      <section style={{ marginTop: 40 }}>
+        <h2>Quest Hub</h2>
+        <h3>Your XP: {userXP}</h3>
+        <ul>
+          {quests.map((quest, i) => (
+            <li key={i} style={{ marginBottom: 10 }}>
+              {quest.title} — {quest.xp} XP
+              {!quest.done && (
+                <button style={{ marginLeft: 10 }} onClick={() => completeQuest(i)}>
+                  Complete
+                </button>
+              )}
+              {quest.done && <span style={{ marginLeft: 10, color: "green" }}>Done!</span>}
+            </li>
+          ))}
+        </ul>
+      </section>
+    </div>
+  );
+}
